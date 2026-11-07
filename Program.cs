@@ -44,7 +44,7 @@ class Program
                 window.Add(rec);                       // быстро, под lock
 
                 var snap = window.GetSnapshot();       // короткий lock       
-                var signal = strategy.OnTick(window.GetSnapshot(), t.Timestamp);
+                var signal = strategy.OnTick(snap, t.Timestamp);
 
                 if (signal.Action != TradeAction.None)
                 {
@@ -54,7 +54,7 @@ class Program
 
                     Console.WriteLine(
                         $"[{t.Timestamp:HH:mm:ss}] {signal.Action} @ {signal.Price:F2}  " +
-                        $"(VWAP {snap.Vwap:F2}, %Sell {snap.PercentSell:F1}{minSell}{stop})");
+                        $"(VWAP {snap.Vwap:F2}, %Sell {snap.PercentSell:F1}{minSell}{stop})\r\n");
                 }
             }
         });
