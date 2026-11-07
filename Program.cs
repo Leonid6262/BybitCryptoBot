@@ -51,10 +51,12 @@ class Program
                     // Логируем только на сигналах (вход/выход), не на каждом тике
                     string minSell = signal.MinSellPrice is decimal m ? $", MinSell {m:F2}" : "";
                     string stop = signal.StopPrice is decimal sp ? $", Stop {sp:F2}" : "";
-
+                    File.AppendAllText("signals.log",
+                                        $"[{t.Timestamp:HH:mm:ss}] {signal.Action} @ {signal.Price:F2} " +
+                                        $"MinSell={signal.MinSellPrice:F2} Stop={signal.StopPrice:F2}\n");
                     Console.WriteLine(
                         $"[{t.Timestamp:HH:mm:ss}] {signal.Action} @ {signal.Price:F2}  " +
-                        $"(VWAP {snap.Vwap:F2}, %Sell {snap.PercentSell:F1}{minSell}{stop})\r\n");
+                        $"(VWAP {snap.Vwap:F2}, %Sell {snap.PercentSell:F1}{minSell}{stop})");
                 }
             }
         });

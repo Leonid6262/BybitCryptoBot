@@ -76,7 +76,7 @@ public class Strategy
         {
             decimal qty = _buyAmountUsdt / s.Price;
             _position.Open(s.Price, qty, _targetProfitUsdt,
-                           _buyFee, _sellFee, _stopLossPercent);
+                           _buyFee, _sellFee, _stopLossPercent, now);
 
             return new Signal(
                 TradeAction.Buy,
@@ -89,3 +89,4 @@ public class Strategy
         return new Signal(TradeAction.None, s.Price, null, null, null);
     }
 }
+

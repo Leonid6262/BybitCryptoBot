@@ -12,12 +12,12 @@ public class Position
     public DateTime OpenedAt { get; private set; }
 
     public void Open(decimal entryPrice, decimal quantity, decimal targetProfitUsdt,
-                     decimal buyFee, decimal sellFee, decimal stopLossPercent)
+                     decimal buyFee, decimal sellFee, decimal stopLossPercent, DateTime now)
     {
         IsOpen = true;
         EntryPrice = entryPrice;
         Quantity = quantity;
-        OpenedAt = DateTime.UtcNow;
+        OpenedAt = now;
 
         // Цена, при которой получим ровно targetProfitUsdt после двух комиссий
         MinSellPrice = (entryPrice * quantity + targetProfitUsdt)
@@ -32,9 +32,10 @@ public class Position
         if (!IsOpen) return ExitReason.None;
         if (currentPrice >= MinSellPrice) return ExitReason.TakeProfit;
         if (currentPrice <= StopPrice) return ExitReason.StopLoss;
-        if ((now - OpenedAt).TotalSeconds >= timeoutSeconds) return ExitReason.Timeout;
+        //if ((now - OpenedAt).TotalSeconds >= timeoutSeconds) return ExitReason.Timeout;
         return ExitReason.None;
     }
 
     public void Close() => IsOpen = false;
 }
+
