@@ -13,6 +13,8 @@ public class TradeWindow
     private decimal _buyVolume;
     private decimal _sellVolume;
 
+    private bool _everReady;
+
     public TradeWindow(int windowSeconds) => _windowSeconds = windowSeconds;
 
     // Снимок для рендера и стратегии — без длинных блокировок
@@ -61,6 +63,9 @@ public class TradeWindow
             var newest = _history.Last();
             double width = (newest.Time - oldest.Time).TotalSeconds;
 
+            if (!_everReady && width >= _windowSeconds * 0.85)
+                _everReady = true;
+
             decimal vwap = _totalVolume > 0 ? _totalValue / _totalVolume : 0;
             decimal totalFlow = _buyVolume + _sellVolume;
             decimal pBuy = totalFlow > 0 ? _buyVolume / totalFlow * 100 : 0;
@@ -71,7 +76,7 @@ public class TradeWindow
                 _totalVolume, _buyVolume, _sellVolume,
                 pBuy, pSell,
                 (int)width,
-                width >= _windowSeconds * 0.85);
+                _everReady);
         }
     }
 }

@@ -1,6 +1,16 @@
 ﻿using BybitCryptoBot.Core;
+using System.Transactions;
 
 namespace BybitCryptoBot.Core;
+
+public enum TradeAction { None, Buy, Sell }
+
+public readonly record struct Signal(
+    TradeAction Action,
+    decimal Price,
+    decimal? EntryPrice,
+    decimal? MinSellPrice,
+    decimal? StopPrice);
 
 public class Strategy
 {
@@ -28,34 +38,54 @@ public class Strategy
         _timeoutSeconds = timeoutSeconds;
 }
 
-public enum Action { None, Buy, Sell }
-
-    public Action OnTick(TradeWindow.Snapshot s, DateTime now)
+    public Signal OnTick(TradeWindow.Snapshot s, DateTime now)
     {
-        // 1) Сначала — проверка выхода, если позиция открыта
+        // 1) Выход, если позиция открыта
         if (_position.IsOpen)
         {
             var reason = _position.Evaluate(s.Price, now, _timeoutSeconds);
             if (reason != ExitReason.None)
             {
+                var exit = new Signal(
+                    TradeAction.Sell,
+                    s.Price,
+                    _position.EntryPrice,
+                    _position.MinSellPrice,
+                    _position.StopPrice);
                 _position.Close();
-                return Action.Sell;
+                return exit;
             }
-            return Action.None; // одну позицию за раз
+
+            // позиция открыта, но выходить рано — сообщаем «держим» + текущие уровни
+            return new Signal(
+                TradeAction.None,
+                s.Price,
+                _position.EntryPrice,
+                _position.MinSellPrice,
+                _position.StopPrice);
         }
 
         // 2) Вход
-        if (!s.IsReady) return Action.None;
-        if (s.TotalVolume < _minVolumeThreshold) return Action.None;
+        if (!s.IsReady)
+            return new Signal(TradeAction.None, s.Price, null, null, null);
+
+        if (s.TotalVolume < _minVolumeThreshold)
+            return new Signal(TradeAction.None, s.Price, null, null, null);
 
         if (s.PercentSell > _imbalanceThreshold && s.Price < s.Vwap)
         {
             decimal qty = _buyAmountUsdt / s.Price;
             _position.Open(s.Price, qty, _targetProfitUsdt,
                            _buyFee, _sellFee, _stopLossPercent);
-            return Action.Buy;
+
+            return new Signal(
+                TradeAction.Buy,
+                s.Price,
+                _position.EntryPrice,
+                _position.MinSellPrice,
+                _position.StopPrice);
         }
 
-        return Action.None;
+        return new Signal(TradeAction.None, s.Price, null, null, null);
     }
 }

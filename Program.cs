@@ -43,12 +43,19 @@ class Program
 
                 window.Add(rec);                       // быстро, под lock
 
-                var snap = window.GetSnapshot();       // короткий lock
-                var action = strategy.OnTick(snap, t.Timestamp);
+                var snap = window.GetSnapshot();       // короткий lock       
+                var signal = strategy.OnTick(window.GetSnapshot(), t.Timestamp);
 
-                if (action != Strategy.Action.None)
-                    Console.WriteLine($"[{t.Timestamp:HH:mm:ss}] {action} @ {t.Price:F2}  " +
-                                      $"(VWAP {snap.Vwap:F2}, %Sell {snap.PercentSell:F1})");
+                if (signal.Action != TradeAction.None)
+                {
+                    // Логируем только на сигналах (вход/выход), не на каждом тике
+                    string minSell = signal.MinSellPrice is decimal m ? $", MinSell {m:F2}" : "";
+                    string stop = signal.StopPrice is decimal sp ? $", Stop {sp:F2}" : "";
+
+                    Console.WriteLine(
+                        $"[{t.Timestamp:HH:mm:ss}] {signal.Action} @ {signal.Price:F2}  " +
+                        $"(VWAP {snap.Vwap:F2}, %Sell {snap.PercentSell:F1}{minSell}{stop})");
+                }
             }
         });
 
