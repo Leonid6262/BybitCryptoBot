@@ -1,5 +1,4 @@
-﻿
-namespace BybitCryptoBot.Models;
+﻿namespace BybitCryptoBot.Models;
 public class TradeRecord
 {
     public DateTime Time { get; set; }

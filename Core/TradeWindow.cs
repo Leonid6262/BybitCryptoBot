@@ -1,6 +1,6 @@
-﻿using BybitCryptoBot.Models;
+﻿namespace BybitCryptoBot.Core;
 
-namespace BybitCryptoBot.Core;
+using BybitCryptoBot.Models;
 
 public class TradeWindow
 {
